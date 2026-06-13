@@ -1,3 +1,37 @@
+-- Rugby Attendance App - Schema V1
+
+-- Drop tables in dependency order
+DROP TABLE IF EXISTS match_events CASCADE;
+DROP TABLE IF EXISTS match_player_records CASCADE;
+DROP TABLE IF EXISTS matches CASCADE;
+DROP TABLE IF EXISTS player_evaluation_items CASCADE;
+DROP TABLE IF EXISTS player_evaluations CASCADE;
+DROP TABLE IF EXISTS athletic_test_results CASCADE;
+DROP TABLE IF EXISTS player_measurements CASCADE;
+DROP TABLE IF EXISTS attendance_records CASCADE;
+DROP TABLE IF EXISTS training_sessions CASCADE;
+DROP TABLE IF EXISTS team_coaches CASCADE;
+DROP TABLE IF EXISTS player_teams CASCADE;
+
+DROP TABLE IF EXISTS match_event_types CASCADE;
+DROP TABLE IF EXISTS match_types CASCADE;
+DROP TABLE IF EXISTS evaluation_criteria CASCADE;
+DROP TABLE IF EXISTS evaluation_categories CASCADE;
+DROP TABLE IF EXISTS athletic_test_types CASCADE;
+DROP TABLE IF EXISTS training_session_types CASCADE;
+DROP TABLE IF EXISTS attendance_statuses CASCADE;
+DROP TABLE IF EXISTS coach_roles CASCADE;
+DROP TABLE IF EXISTS player_positions CASCADE;
+
+DROP TABLE IF EXISTS coaches CASCADE;
+DROP TABLE IF EXISTS players CASCADE;
+DROP TABLE IF EXISTS teams CASCADE;
+DROP TABLE IF EXISTS seasons CASCADE;
+DROP TABLE IF EXISTS clubs CASCADE;
+
+
+-- Core tables
+
 CREATE TABLE clubs (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -52,16 +86,23 @@ CREATE TABLE coaches (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-CREATE TABLE coach_roles (
+
+
+-- Lookup tables
+
+CREATE TABLE player_positions (
     id SERIAL PRIMARY KEY,
+    player_position_number INTEGER NOT NULL UNIQUE,
     code VARCHAR(50) NOT NULL UNIQUE,
     description VARCHAR(100) NOT NULL,
+    position_group VARCHAR(30) NOT NULL,
+    position_sub_group VARCHAR(50) NOT NULL,
     active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE player_positions (
+CREATE TABLE coach_roles (
     id SERIAL PRIMARY KEY,
     code VARCHAR(50) NOT NULL UNIQUE,
     description VARCHAR(100) NOT NULL,
@@ -135,16 +176,23 @@ CREATE TABLE match_event_types (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+
+-- Team relations
+
 CREATE TABLE player_teams (
     id SERIAL PRIMARY KEY,
     player_id INTEGER NOT NULL REFERENCES players(id),
     team_id INTEGER NOT NULL REFERENCES teams(id),
-    player_position_id INTEGER REFERENCES player_positions(id),
+    primary_position_id INTEGER REFERENCES player_positions(id),
+    alternative_position_id INTEGER REFERENCES player_positions(id),
     jersey_number INTEGER,
     active BOOLEAN NOT NULL DEFAULT TRUE,
     joined_at DATE,
     left_at DATE,
     notes TEXT,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (player_id, team_id)
@@ -159,10 +207,15 @@ CREATE TABLE team_coaches (
     joined_at DATE,
     left_at DATE,
     notes TEXT,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (team_id, coach_id, coach_role_id)
 );
+
+
+-- Training and attendance
 
 CREATE TABLE training_sessions (
     id SERIAL PRIMARY KEY,
@@ -173,6 +226,8 @@ CREATE TABLE training_sessions (
     end_time TIME,
     location VARCHAR(150),
     description VARCHAR(250),
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -183,10 +238,15 @@ CREATE TABLE attendance_records (
     training_session_id INTEGER NOT NULL REFERENCES training_sessions(id),
     attendance_status_id INTEGER NOT NULL REFERENCES attendance_statuses(id),
     notes TEXT,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (player_team_id, training_session_id)
 );
+
+
+-- Physical measurements and athletic tests
 
 CREATE TABLE player_measurements (
     id SERIAL PRIMARY KEY,
@@ -195,6 +255,8 @@ CREATE TABLE player_measurements (
     height_cm NUMERIC(5,2),
     weight_kg NUMERIC(5,2),
     notes TEXT,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -206,15 +268,23 @@ CREATE TABLE athletic_test_results (
     test_date DATE NOT NULL,
     value NUMERIC(8,2) NOT NULL,
     notes TEXT,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+
+-- Player evaluations
+
 CREATE TABLE player_evaluations (
     id SERIAL PRIMARY KEY,
     player_team_id INTEGER NOT NULL REFERENCES player_teams(id),
     evaluator_coach_id INTEGER REFERENCES coaches(id),
     evaluation_date DATE NOT NULL,
     notes TEXT,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -225,11 +295,16 @@ CREATE TABLE player_evaluation_items (
     evaluation_criteria_id INTEGER NOT NULL REFERENCES evaluation_criteria(id),
     score INTEGER NOT NULL,
     notes TEXT,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CHECK (score BETWEEN 1 AND 10),
     UNIQUE (player_evaluation_id, evaluation_criteria_id)
 );
+
+
+-- Matches
 
 CREATE TABLE matches (
     id SERIAL PRIMARY KEY,
@@ -242,6 +317,8 @@ CREATE TABLE matches (
     score_for INTEGER,
     score_against INTEGER,
     notes TEXT,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CHECK (home_away IN ('home', 'away', 'neutral'))
@@ -256,6 +333,8 @@ CREATE TABLE match_player_records (
     minutes_played INTEGER,
     jersey_number INTEGER,
     notes TEXT,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (match_id, player_team_id)
@@ -269,6 +348,25 @@ CREATE TABLE match_events (
     minute INTEGER,
     value NUMERIC(8,2) DEFAULT 1,
     notes TEXT,
+    created_by VARCHAR(100),
+    updated_by VARCHAR(100),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+
+-- Useful indexes
+
+CREATE INDEX idx_teams_club_season ON teams(club_id, season_id);
+CREATE INDEX idx_player_teams_player ON player_teams(player_id);
+CREATE INDEX idx_player_teams_team ON player_teams(team_id);
+CREATE INDEX idx_team_coaches_team ON team_coaches(team_id);
+CREATE INDEX idx_training_sessions_team_date ON training_sessions(team_id, session_date);
+CREATE INDEX idx_attendance_records_session ON attendance_records(training_session_id);
+CREATE INDEX idx_attendance_records_player_team ON attendance_records(player_team_id);
+CREATE INDEX idx_player_measurements_player_team_date ON player_measurements(player_team_id, measurement_date);
+CREATE INDEX idx_athletic_test_results_player_team_date ON athletic_test_results(player_team_id, test_date);
+CREATE INDEX idx_player_evaluations_player_team_date ON player_evaluations(player_team_id, evaluation_date);
+CREATE INDEX idx_matches_team_date ON matches(team_id, match_date);
+CREATE INDEX idx_match_player_records_match ON match_player_records(match_id);
+CREATE INDEX idx_match_events_match ON match_events(match_id);
