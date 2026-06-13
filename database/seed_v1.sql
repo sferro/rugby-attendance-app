@@ -25,7 +25,6 @@ INSERT INTO player_positions (
     position_sub_group
 )
 VALUES
-
 (1,  'prop_loosehead',    'Pilar Izquierdo', 'FORWARDS', 'FIRST_LINE'),
 (2,  'hooker',            'Hooker',          'FORWARDS', 'FIRST_LINE'),
 (3,  'prop_tighthead',    'Pilar Derecho',   'FORWARDS', 'FIRST_LINE'),
@@ -47,6 +46,7 @@ VALUES
 (14, 'right_wing',        'Wing Derecho',    'BACKS',    'WING'),
 
 (15, 'fullback',          'Full Back',       'BACKS',    'FULLBACK');
+
 INSERT INTO coach_roles (
     code,
     description
@@ -56,8 +56,10 @@ VALUES
 ('assistant_coach', 'Entrenador Asistente'),
 ('forwards_coach', 'Entrenador de Forwards'),
 ('backs_coach', 'Entrenador de Backs'),
+('scrum_coach', 'Entrenador de Scrum'),
 ('physical_trainer', 'Preparador Físico'),
 ('manager', 'Manager');
+
 INSERT INTO attendance_statuses (
     code,
     description
