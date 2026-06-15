@@ -63,9 +63,10 @@ class Match(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        db_table = "matches"
-
+class Meta:
+    db_table = "matches"
+    ordering = ["-match_date", "id"]
+    
     def __str__(self):
         squad_label = self.squad.description if self.squad else self.team.name
         return f"{squad_label} vs {self.opponent_name} - {self.match_date}"
@@ -91,16 +92,31 @@ class MatchPlayerRecord(models.Model):
     )
     starter = models.BooleanField(default=False)
     captain = models.BooleanField(default=False)
-    minutes_played = models.IntegerField(blank=True, null=True)
-    jersey_number = models.IntegerField(blank=True, null=True)
+    minutes_played = models.PositiveSmallIntegerField(
+        blank=True,
+        null=True,
+    )
+    jersey_number = models.PositiveSmallIntegerField(
+        blank=True,
+        null=True,
+    )
     notes = models.TextField(blank=True, null=True)
     created_by = models.CharField(max_length=100, blank=True, null=True)
     updated_by = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        db_table = "match_player_records"
+class Meta:
+    db_table = "match_player_records"
+
+    ordering = ["jersey_number", "id"]
+
+    constraints = [
+        models.UniqueConstraint(
+            fields=["match", "player_team"],
+            name="uq_match_player",
+        )
+    ]
 
     def __str__(self):
         return f"{self.player_team} - {self.match}"
