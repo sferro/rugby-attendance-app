@@ -30,4 +30,14 @@ urlpatterns = [
         views.create_training_session,
         name="create_training_session",
     ),
+    path(
+        "session/<int:session_id>/review/",
+        views.attendance_review,
+        name="attendance_review",
+    ),    
+    path(
+        "session/<int:session_id>/player-record/<int:record_id>/update/<int:status_id>/",
+        views.update_player_attendance,
+        name="update_player_attendance",
+    ),
 ]

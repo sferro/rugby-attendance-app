@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Revisar asistencia</title>
+</head>
+<body>
+
+    <h1>Revisar asistencia</h1>
+
+    <h2>{{ training_session.team }} - {{ training_session.session_date }}</h2>
+
+    <p>
+        <a href="{% url 'attendance:load_attendance' training_session.id %}">
+            Volver a carga
+        </a>
+    </p>
+
+    <hr>
+
+    <h3>Ausentes ({{ absent_records.count }})</h3>
+
+    {% for record in absent_records %}
+        {% include "attendance/partials/player_review_row.html" %}
+    {% empty %}
+        <p>No hay ausentes.</p>
+    {% endfor %}
+
+    <hr>
+
+    <h3>Lesionados ({{ injured_records.count }})</h3>
+
+    {% for record in injured_records %}
+        {% include "attendance/partials/player_review_row.html" %}
+    {% empty %}
+        <p>No hay lesionados.</p>
+    {% endfor %}
+
+    <hr>
+
+    <h3>Enfermos ({{ sick_records.count }})</h3>
+
+    {% for record in sick_records %}
+        {% include "attendance/partials/player_review_row.html" %}
+    {% empty %}
+        <p>No hay enfermos.</p>
+    {% endfor %}
+
+    <hr>
+
+    <h3>Presentes ({{ present_records.count }})</h3>
+
+    {% for record in present_records %}
+        {% include "attendance/partials/player_review_row.html" %}
+    {% empty %}
+        <p>No hay presentes.</p>
+    {% endfor %}
+
+</body>
+</html>

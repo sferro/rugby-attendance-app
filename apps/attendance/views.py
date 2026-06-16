@@ -180,7 +180,7 @@ def load_attendance(request, session_id):
 
 def create_training_session(request):
     team = get_current_team(request)
-    
+
     if request.method == "POST":
         date_offset = int(request.POST.get("date_offset", 0))
         session_type_code = request.POST.get("session_type", "training")
@@ -192,12 +192,14 @@ def create_training_session(request):
             code=session_type_code,
         )
 
-        training_session = TrainingSession.objects.create(
+        training_session, created = TrainingSession.objects.get_or_create(
             team=team,
             training_session_type=session_type,
             session_date=session_date,
-            description=session_type.description,
-            created_by="web",
+            defaults={
+                "description": session_type.description,
+                "created_by": "web",
+            },
         )
 
         return redirect(
@@ -219,6 +221,85 @@ def get_current_team(request):
     return get_object_or_404(
         Team,
         name="M13",
+    )
+
+def attendance_review(request, session_id):
+    training_session = get_object_or_404(
+        TrainingSession,
+        id=session_id,
+    )
+
+    present_records = AttendanceRecord.objects.filter(
+        training_session=training_session,
+        attendance_status__code="present",
+    ).select_related(
+        "player_team__player",
+    )
+
+    absent_records = AttendanceRecord.objects.filter(
+        training_session=training_session,
+        attendance_status__code="absent",
+    ).select_related(
+        "player_team__player",
+    )
+
+    injured_records = AttendanceRecord.objects.filter(
+        training_session=training_session,
+        attendance_status__code="injured",
+    ).select_related(
+        "player_team__player",
+    )
+
+    sick_records = AttendanceRecord.objects.filter(
+        training_session=training_session,
+        attendance_status__code="sick",
+    ).select_related(
+        "player_team__player",
+    ).order_by(
+        "attendance_status__description",
+        "player_team__player__last_name",
+        "player_team__player__first_name",
+    )
+
+    context = {
+        "training_session": training_session,
+        "present_records": present_records,
+        "absent_records": absent_records,
+        "injured_records": injured_records,
+        "sick_records": sick_records,
+    }
+
+    return render(
+        request,
+        "attendance/review.html",
+        context,
+    )
+
+@require_POST
+def update_player_attendance(request, session_id, record_id, status_id):
+    training_session = get_object_or_404(
+        TrainingSession,
+        id=session_id,
+    )
+
+    record = get_object_or_404(
+        AttendanceRecord,
+        id=record_id,
+        training_session=training_session,
+    )
+
+    attendance_status = get_object_or_404(
+        AttendanceStatus,
+        id=status_id,
+    )
+
+    record.attendance_status = attendance_status
+    record.updated_by = "web"
+    record.save()
+
+    return redirect(
+        "attendance:attendance_review",
+        session_id=training_session.id,
     )
 
 @require_POST
