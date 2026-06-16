@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Asistencia</title>
+</head>
+<body>
+
+    <h1>Asistencia</h1>
+
+    {% if latest_session %}
+
+        <h2>Última asistencia cargada</h2>
+
+        <p>
+            {{ latest_session.team }}
+            -
+            {{ latest_session.session_date }}
+        </p>
+
+        <h3>Jugadores</h3>
+
+        <p>Presentes: {{ player_summary.present }}</p>
+        <p>Ausentes: {{ player_summary.absent }}</p>
+        <p>Lesionados: {{ player_summary.injured }}</p>
+        <p>Enfermos: {{ player_summary.sick }}</p>
+
+        <h3>Staff</h3>
+
+        {% if staff_summary.present or staff_summary.absent %}
+            <p>Presentes: {{ staff_summary.present }}</p>
+            <p>Ausentes: {{ staff_summary.absent }}</p>
+        {% else %}
+            <p>Staff todavía no cargado.</p>
+        {% endif %}
+        <hr>
+
+
+        <a href="{% url 'attendance:create_training_session' %}">
+            Crear nuevo entrenamiento
+        </a>
+    {% else %}
+
+        <p>No hay entrenamientos cargados.</p>
+
+    {% endif %}
+
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Carga de asistencia</title>
+</head>
+<body>
+    <h1>Carga de asistencia</h1>
+
+    <h2>{{ training_session.team }} - {{ training_session.session_date }}</h2>
+
+    <p>
+        <strong>Jugadores:</strong>
+        {{ completed_players }} cargados /
+        {{ pending_players_count }} pendientes /
+        {{ total_players }} total
+    </p>
+
+    <p>
+        <strong>Staff:</strong>
+        {{ completed_staff }} cargados /
+        {{ pending_staff_count }} pendientes /
+        {{ total_staff }} total
+    </p>
+
+    <hr>
+
+<h3>Jugadores pendientes</h3>
+
+{% for player_team in pending_players %}
+
+<div style="margin-bottom:10px;">
+
+    <strong>
+        {{ player_team.player.last_name }},
+        {{ player_team.player.first_name }}
+    </strong>
+
+    <form
+        method="post"
+        action="{% url 'attendance:record_player_attendance' training_session.id player_team.id 1 %}"
+        style="display:inline;"
+    >
+        {% csrf_token %}
+        <button type="submit">Presente</button>
+    </form>
+
+    <form
+        method="post"
+        action="{% url 'attendance:record_player_attendance' training_session.id player_team.id 2 %}"
+        style="display:inline;"
+    >
+        {% csrf_token %}
+        <button type="submit">Ausente</button>
+    </form>
+
+    <form
+        method="post"
+        action="{% url 'attendance:record_player_attendance' training_session.id player_team.id 3 %}"
+        style="display:inline;"
+    >
+        {% csrf_token %}
+        <button type="submit">Lesionado</button>
+    </form>
+
+    <form
+        method="post"
+        action="{% url 'attendance:record_player_attendance' training_session.id player_team.id 6 %}"
+        style="display:inline;"
+    >
+        {% csrf_token %}
+        <button type="submit">Enfermo</button>
+    </form>
+
+</div>
+
+{% empty %}
+    <p>No quedan jugadores pendientes.</p>
+{% endfor %}
+    <hr>
+
+<h3>Staff pendiente</h3>
+
+{% for team_coach in pending_staff %}
+
+<div style="margin-bottom:10px;">
+
+    <strong>
+        {{ team_coach.coach.last_name }},
+        {{ team_coach.coach.first_name }}
+    </strong>
+
+    <br>
+
+    <small>{{ team_coach.coach_role }}</small>
+
+    <br>
+
+    <form
+        method="post"
+        action="{% url 'attendance:record_staff_attendance' training_session.id team_coach.id 1 %}"
+        style="display:inline;"
+    >
+        {% csrf_token %}
+        <button type="submit">Presente</button>
+    </form>
+
+    <form
+        method="post"
+        action="{% url 'attendance:record_staff_attendance' training_session.id team_coach.id 2 %}"
+        style="display:inline;"
+    >
+        {% csrf_token %}
+        <button type="submit">Ausente</button>
+    </form>
+
+</div>
+
+{% empty %}
+    <p>No queda staff pendiente.</p>
+{% endfor %}    
+</body>
+</html>

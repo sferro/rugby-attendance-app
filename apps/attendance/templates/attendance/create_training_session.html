@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nueva asistencia</title>
+</head>
+<body>
+
+    <h1>Nueva asistencia</h1>
+
+    <p>{{ team }}</p>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <h3>Fecha</h3>
+
+        <button type="submit" name="date_offset" value="0">
+            Hoy
+        </button>
+
+        <button type="submit" name="date_offset" value="1">
+            Mañana
+        </button>
+
+        <button type="submit" name="date_offset" value="2">
+            Pasado mañana
+        </button>
+
+        <h3>Tipo</h3>
+
+        <p>
+            <label>
+                <input type="radio" name="session_type" value="training" checked>
+                Entrenamiento regular
+            </label>
+        </p>
+
+        <p>
+            <label>
+                <input type="radio" name="session_type" value="match">
+                Asistencia partido
+            </label>
+        </p>
+    </form>
+
+</body>
+</html>

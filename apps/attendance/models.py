@@ -84,6 +84,12 @@ class AttendanceRecord(models.Model):
 
     class Meta:
         db_table = "attendance_records"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["player_team", "training_session"],
+                name="uq_player_training_session_attendance",
+            )
+        ]
 
     def __str__(self):
         return f"{self.player_team} - {self.training_session} - {self.attendance_status}"
@@ -113,6 +119,12 @@ class StaffAttendanceRecord(models.Model):
 
     class Meta:
         db_table = "staff_attendance_records"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["team_coach", "training_session"],
+                name="uq_staff_training_session_attendance",
+            )
+        ]
 
     def __str__(self):
         return f"{self.team_coach} - {self.training_session} - {self.attendance_status}"
